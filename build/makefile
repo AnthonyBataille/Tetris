@@ -36,5 +36,5 @@ $(BUILDDIR)/%.o: $(SRCDIR)/%.cpp
 clean:
 	rm $(BUILDDIR)/*.o
 
-mrproper: clean
+mrproper:
 	rm $(EXE)

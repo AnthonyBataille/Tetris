@@ -1,7 +1,7 @@
 #ifndef GAME_STATE_H
 #define GAME_STATE_H
 
-#include "graphics.h"
+#include "block.h"
 #include "tetro.h"
 
 #include <iostream>
@@ -15,14 +15,13 @@ using namespace std;
 
 class Text{
 	public:
-		string text;
 		SDL_Color color = {0, 0, 0};
 		SDL_Rect destRect = {0, 0, 0, 0};
 		
 		Text();
-		Text(SDL_Renderer* ren, const string& fontPath, const SDL_Color& textColor, const char* textStr, const int size, const int x, const int y);
-		void load(SDL_Renderer* ren, const string& fontPath, const SDL_Color& textColor, const char* textStr, const int size, const int x, const int y);
-		void center(const int windowWidth, const int windowHeight);
+		Text(SDL_Renderer* ren, const string& fontPath, const SDL_Color& textColor, const string& text, const int& size, const int& x, const int& y);
+		void load(SDL_Renderer* ren, const string& fontPath, const SDL_Color& textColor, const string& text, const int& size, const int& x, const int& y);
+		void center(const int& windowWidth, const int& windowHeight);
 		~Text();
 		void render(SDL_Renderer* ren, const char* newText);
 		void free();
@@ -53,7 +52,7 @@ class GameState{
 		unsigned int level = 1;
 		unsigned int linesCleared = 0;
 		
-		shared_ptr<Block> blockGrid[gridSizeY][gridSizeX] = {nullptr};
+		shared_ptr<Block> blockGrid[gridSizeY][gridSizeX] = {nullptr}; // A 2-array containing pointers to all the blocks in the game field
 		vector<shared_ptr<Tetro>> vTetroP; // Vector containing all tetrominoes (pieces) in game
 		
 		shared_ptr<Tetro> ghost = nullptr; // The ghost predicts where the next piece will fall
@@ -68,7 +67,7 @@ class GameState{
 		~GameState();
 		
 		void processInput(int& dx, int& dy, int& t, bool& setPause, bool& setMute);
-		void updateGame(int& dx, int& dy, int& t, bool& setPause, bool& setMute);
+		void updateGame(const int& dx, const int& dy, const int& t, const bool& setPause, const bool& setMute);
 		void updateGraphics();
 
 		

@@ -1,4 +1,4 @@
-#include "graphics.h"
+#include "block.h"
 #include "tetro.h"
 #include "gamestate.h"
 
@@ -13,23 +13,21 @@ using namespace std;
 
 
 Text::Text(){
-	text = "";
 	font = nullptr;
 	tex = nullptr;
 	color = {0, 0, 0};
 	destRect = {0, 0, 0, 0};
 };
 
-Text::Text(SDL_Renderer* ren, const string& fontPath, const SDL_Color& textColor, const char* textStr, const int size, const int x, const int y){
-	load(ren, fontPath, textColor, textStr, size, x, y);
+Text::Text(SDL_Renderer* ren, const string& fontPath, const SDL_Color& textColor, const string& text, const int& size, const int& x, const int& y){
+	load(ren, fontPath, textColor, text, size, x, y);
 }
 
-void Text::load(SDL_Renderer* ren, const string& fontPath, const SDL_Color& textColor, const char* textStr, const int size, const int x, const int y){
+void Text::load(SDL_Renderer* ren, const string& fontPath, const SDL_Color& textColor, const string& text, const int& size, const int& x, const int& y){
 	free();
 	
 	color = textColor;
 	destRect = {x, y, 0, 0};
-	text = string(textStr);
 	
 	font = TTF_OpenFont(fontPath.c_str(), size);
 	if(font == nullptr){
@@ -59,7 +57,7 @@ void Text::load(SDL_Renderer* ren, const string& fontPath, const SDL_Color& text
 	SDL_FreeSurface(textSurface);	
 }
 
-void Text::center(const int windowWidth, const int windowHeight){
+void Text::center(const int& windowWidth, const int& windowHeight){
 	destRect.x = windowWidth / 2 - destRect.w / 2;
 	destRect.y = windowHeight / 2 - destRect.h / 2;
 }
@@ -75,7 +73,6 @@ void Text::free(){
 	font = nullptr;
 	color = {0, 0, 0};
 	destRect = {0, 0, 0, 0};
-	text = "";
 }
 
 Text::~Text(){
@@ -84,7 +81,6 @@ Text::~Text(){
 
 void Text::render(SDL_Renderer* ren, const char* newText){
 	if(tex != nullptr) SDL_DestroyTexture(tex);
-	text = string(newText);
 	SDL_Surface* textSurface = TTF_RenderText_Solid(font, newText, color);
 	if(textSurface == nullptr){
 		cout << "TTF_RenderText_Solid error : " << TTF_GetError() << endl;
@@ -217,7 +213,7 @@ bool GameState::checkGrid(const Tetro& tetro){ // returns false if a tetro overl
 	if(tetro.getType() == VOID_TETRO) return true;
 	for(auto it = tetro.vBlockP.cbegin(); it != tetro.vBlockP.cend(); ++it){
 		if((**it).y < 0) return true;
-		if(blockGrid[(**it).y / blockHeight][(**it).x / blockWidth] != nullptr) return false;
+		if(blockGrid[(**it).y][(**it).x] != nullptr) return false;
 	}
 	return true;
 }
@@ -293,7 +289,7 @@ void GameState::newTetro(){
 	
 	if(!gameOver){ // Update blockGrid with the data of the new tetro
 		for(auto it = currentTetro.vBlockP.cbegin(); it != currentTetro.vBlockP.cend(); ++it){
-			blockGrid[(**it).y / blockHeight][(**it).x / blockWidth] = *it;
+			blockGrid[(**it).y][(**it).x] = *it;
 		}
 	}
 	makeGhost(currentTetro); // Generate new ghost
@@ -317,7 +313,7 @@ void GameState::processInput(int& dx, int& dy, int& t, bool& setPause, bool& set
 	currentKeyStates = SDL_GetKeyboardState(nullptr);
 	
 	if(currentKeyStates[SDL_GetScancodeFromKey(SDLK_ESCAPE)]){
-		if(keyDown[0] == false){
+		if(!keyDown[0]){
 			setPause = true;
 			keyDown[0] = true;
 		}
@@ -329,10 +325,10 @@ void GameState::processInput(int& dx, int& dy, int& t, bool& setPause, bool& set
 	
 	if(currentKeyStates[SDL_GetScancodeFromKey(SDLK_d)]){
 		newTimeKey = SDL_GetTicks();
-		if(newTimeKey - oldTimeKey > keyDelayCurrent[0] || keyDown[1] == false){
+		if(newTimeKey - oldTimeKey > keyDelayCurrent[0] || !keyDown[1]){
 			dx = 1;
 			oldTimeKey = newTimeKey;
-			if(keyDown[1] == true) keyDelayCurrent[0] = keyDelay;
+			if(keyDown[1]) keyDelayCurrent[0] = keyDelay;
 			keyDown[1] = true;
 		}
 	}
@@ -343,10 +339,10 @@ void GameState::processInput(int& dx, int& dy, int& t, bool& setPause, bool& set
 
 	if(currentKeyStates[SDL_GetScancodeFromKey(SDLK_q)]){
 		newTimeKey = SDL_GetTicks();
-		if(newTimeKey - oldTimeKey > keyDelayCurrent[1] || keyDown[2] == false){
+		if(newTimeKey - oldTimeKey > keyDelayCurrent[1] || !keyDown[2]){
 			dx = -1;
 			oldTimeKey = newTimeKey;
-			if(keyDown[2] == true) keyDelayCurrent[1] = keyDelay;
+			if(keyDown[2]) keyDelayCurrent[1] = keyDelay;
 			keyDown[2] = true;
 		}
 	}
@@ -357,10 +353,10 @@ void GameState::processInput(int& dx, int& dy, int& t, bool& setPause, bool& set
 	
 	if(currentKeyStates[SDL_GetScancodeFromKey(SDLK_s)]){
 		newTimeKey = SDL_GetTicks();
-		if(newTimeKey - oldTimeKey > keyDelayCurrent[2] || keyDown[3] == false){
+		if(newTimeKey - oldTimeKey > keyDelayCurrent[2] || !keyDown[3]){
 			dy = 1;
 			oldTimeKey = newTimeKey;
-			if(keyDown[3] == true) keyDelayCurrent[2] = keyDelay;
+			if(keyDown[3]) keyDelayCurrent[2] = keyDelay;
 			keyDown[3] = true;
 		}
 	}
@@ -370,7 +366,7 @@ void GameState::processInput(int& dx, int& dy, int& t, bool& setPause, bool& set
 	}
 	
 	if(currentKeyStates[SDL_GetScancodeFromKey(SDLK_RIGHT)]){
-		if(keyDown[4] == false){
+		if(!keyDown[4] ){
 			t = 1;
 			keyDown[4] = true;
 		}
@@ -380,7 +376,7 @@ void GameState::processInput(int& dx, int& dy, int& t, bool& setPause, bool& set
 	}
 	
 	if(currentKeyStates[SDL_GetScancodeFromKey(SDLK_LEFT)]){
-		if(keyDown[5] == false){
+		if(!keyDown[5]){
 			t = -1;
 			keyDown[5] = true;
 		}
@@ -390,7 +386,7 @@ void GameState::processInput(int& dx, int& dy, int& t, bool& setPause, bool& set
 	}
 	
 	if(currentKeyStates[SDL_GetScancodeFromKey(SDLK_m)]){
-		if(keyDown[6] == false){
+		if(!keyDown[6]){
 			setMute = true;
 			keyDown[6] = true;
 		}
@@ -400,7 +396,7 @@ void GameState::processInput(int& dx, int& dy, int& t, bool& setPause, bool& set
 	}
 }
 
-void GameState::updateGame(int& dx, int& dy, int& t, bool& setPause, bool& setMute){
+void GameState::updateGame(const int& dx, const int& dy, const int& t, const bool& setPause, const bool& setMute){
 	if(vTetroP.empty()) return;
 	
 	if(setPause){
@@ -427,31 +423,23 @@ void GameState::updateGame(int& dx, int& dy, int& t, bool& setPause, bool& setMu
 	
 	Tetro& currentTetro = *(vTetroP.back());
 	
-	if(dx == -1){ // Move Left
-		if(!currentTetro.detectCollisionLeft(blockGrid)){
-			currentTetro.moveLeft(blockGrid);
+	if(dx){ // Move left or right
+		if(!currentTetro.detectCollisionSide(blockGrid, dx)){
+			currentTetro.moveSide(blockGrid, dx);
 			if(currentTetro.detectCollisionBot(blockGrid)) resetDelay = true;
 		}
 	}
-	else if(dx == 1){ // Move Right
-		if(!currentTetro.detectCollisionRight(blockGrid)){
-			currentTetro.moveRight(blockGrid);
-			if(currentTetro.detectCollisionBot(blockGrid)) resetDelay = true;
-		}
-	}
-	if(dy == 1){ // Move Down
+
+	if(dy){ // Move Down
 		if(!currentTetro.detectCollisionBot(blockGrid)){
 			currentTetro.moveDown(blockGrid);
 		}
 	}
 	
-	if(t == 1){ // Turn Right
-		if(currentTetro.turnRight(blockGrid) && currentTetro.detectCollisionBot(blockGrid)) resetDelay = true;
+	if(t){ // Turn left or right
+		if(currentTetro.turn(blockGrid, t) && currentTetro.detectCollisionBot(blockGrid)) resetDelay = true;
 	}
 	
-	else if(t == -1){ // Turn Left
-		if(currentTetro.turnLeft(blockGrid) && currentTetro.detectCollisionBot(blockGrid)) resetDelay = true;
-	}
 	// Check timer and move tetro down
 	newTime = SDL_GetTicks();
 	if(resetDelay || gamePaused) oldTime = newTime;
@@ -468,17 +456,6 @@ void GameState::updateGame(int& dx, int& dy, int& t, bool& setPause, bool& setMu
 	}
 	Tetro& newTetro = *(vTetroP.back()); // Update to potential new tetro
 	updateGhost(newTetro);
-	
-	//Debug
-	//if(t || dx || dy){
-		//for(int j = 0; j < gridSizeY; ++j){
-			//for(int i = 0; i < gridSizeX; ++i){
-				//cout << blockGrid[j][i] << " ";
-			//}
-		//cout << endl;
-		//}
-		//cout << "--------------------------" << endl;
-	//}
 }
 
 void GameState::eraseLine(){
@@ -518,7 +495,7 @@ void GameState::packLines(vector<int>& lines){
 		for(int j = currentLine - 1; j >= 0; --j){
 			for(int i = 0; i < gridSizeX; ++i){
 				if(blockGrid[j][i] != nullptr){
-					blockGrid[j][i]->y += blockHeight;
+					++(blockGrid[j][i]->y);
 					blockGrid[j + 1][i] = blockGrid[j][i];
 					blockGrid[j][i].reset();
 				}

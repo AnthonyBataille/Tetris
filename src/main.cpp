@@ -1,4 +1,4 @@
-#include "graphics.h"
+#include "block.h"
 #include "tetro.h"
 #include "gamestate.h"
 
