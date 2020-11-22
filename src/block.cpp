@@ -4,16 +4,16 @@
 #include <SDL2/SDL.h>
 
 
-void logSDLError(ostream& os, const string& msg){
-	os << msg << " error: " << SDL_GetError() << endl;
+void logSDLError(std::ostream& os, const std::string& msg){
+	os << msg << " error: " << SDL_GetError() << std::endl;
 }
 
 
-SDL_Window* createWindow(const string& title, const int& pos_x, const int& pos_y, const int& width, const int& height){
+SDL_Window* createWindow(const std::string& title, const int& pos_x, const int& pos_y, const int& width, const int& height){
 	const Uint32 flags = SDL_WINDOW_SHOWN;
 	SDL_Window* win = SDL_CreateWindow(title.c_str(), pos_x, pos_y, width, height, flags);
 	if(win == nullptr){
-		logSDLError(cout, "SDL_CreateWindow");
+		logSDLError(std::cout, "SDL_CreateWindow");
 	}
 	return win;
 }
@@ -24,24 +24,18 @@ SDL_Renderer* createRenderer(SDL_Window* win){
 	SDL_Renderer* ren = SDL_CreateRenderer(win, index, flags);
 
 	if(ren == nullptr){
-		logSDLError(cout, "SDL_CreateRenderer");
+		logSDLError(std::cout, "SDL_CreateRenderer");
 	}
 	return ren;
 }
 
 // class Block
 
-Block::Block(){
-	tex = nullptr;
-	width = 0;
-	height = 0;
-	x = 0;
-	y = 0;
-	tetroOwner = nullptr;
-}
+Block::Block():_tetroOwner(nullptr), _tex(nullptr), _x(0), _y(0), _screenX(0), _screenY(0){}
 
-Block::Block(const string& imagePath, SDL_Renderer* ren, Tetro* owner, const int& gridX = 0, const int& gridY = 0){
-	loadFromFile(imagePath, ren, owner, gridX, gridY);
+Block::Block(const std::string& imagePath, SDL_Renderer* ren, Tetromino* owner, const int& x, const int& y):
+_tetroOwner(nullptr), _tex(nullptr), _x(x), _y(y), _screenX(x * blockWidth), _screenY(y * blockHeight){
+	loadFromFile(imagePath, ren, owner);
 }
 
 Block::~Block(){
@@ -49,97 +43,90 @@ Block::~Block(){
 }
 
 bool operator==(const Block& B1, const Block& B2){
-	return (B1.getWidth() == B2.getWidth() && B1.getHeight() == B2.getHeight() && B1.getTexPtr() == B2.getTexPtr());
+	return (B1.getTexPtr() == B2.getTexPtr());
 }
 
-bool Block::loadFromFile(const string& imagePath, SDL_Renderer* ren, Tetro* owner, const int& gridX = 0, const int& gridY = 0){
-	x = gridX;
-	y = gridY;
-	screenX = x * blockWidth;
-	screenY = y * blockHeight;
+void Block::loadFromFile(const std::string& imagePath, SDL_Renderer* ren, Tetromino* owner){
 	SDL_Surface* bmp = SDL_LoadBMP(imagePath.c_str());
 	if(bmp == nullptr){
-		logSDLError(cout, "SDL_LoadBMP");
-		tex = nullptr;
-		width = 0;
-		height = 0;
-		x = 0;
-		y = 0;
-		screenX = x * blockWidth;
-		screenY = y * blockHeight;
-		tetroOwner = nullptr;
-		return false;
+		logSDLError(std::cout, "SDL_LoadBMP");
+		free();
 	}
-	width = bmp->w;
-	height = bmp->h;
-	tex = SDL_CreateTextureFromSurface(ren, bmp);
-	tetroOwner = owner;
+	_tex = SDL_CreateTextureFromSurface(ren, bmp);
+	_tetroOwner = owner;
 	SDL_FreeSurface(bmp);
-	if(tex == nullptr){
-		logSDLError(cout, "SDL_CreateBlockFromSurface");
-		width = 0;
-		height = 0;
-		x = 0;
-		y = 0;
-		screenX = x * blockWidth;
-		screenY = y * blockHeight;
-		tetroOwner = nullptr;
-		return false;
+	if(_tex == nullptr){
+		logSDLError(std::cout, "SDL_CreateBlockFromSurface");
+		free();
 	}
-	return true;
 }
 
 void Block::free(){
-	if(tex != nullptr){
-		SDL_DestroyTexture(tex);
-		tex = nullptr;
+	if(_tex != nullptr){
+		SDL_DestroyTexture(_tex);
+		_tex = nullptr;
 	}
-	width = 0;
-	height = 0;
-	x = 0;
-	y = 0;
-	screenX = x * blockWidth;
-	screenY = y * blockHeight;
-	tetroOwner = nullptr;
+	_x = 0;
+	_y = 0;
+	_screenX = _x * blockWidth;
+	_screenY = _y * blockHeight;
+	_tetroOwner = nullptr;
 }
 
 void Block::render(SDL_Rect* clip, SDL_Renderer* ren){
 	// clip: Source rectangle that contains the part of the block to be rendered
-	if(tex == nullptr){
-		cout << "No block to render" << endl;
+	if(_tex == nullptr){
 		SDL_Delay(1000);
 		return;
 	}
-	// RenderQuad: destination rectangle : has coordinates x and y of the block and the size of clip
-	SDL_Rect renderQuad = {screenX, screenY, width, height};
+	// RenderQuad: destination rectangle, has coordinates x and y of the block and the size of clip
+	SDL_Rect renderQuad = {_screenX, _screenY, blockWidth, blockHeight};
 	if(clip != nullptr){
 		renderQuad.w = clip->w;
 		renderQuad.h = clip->h;
 	}
-	if(SDL_RenderCopy(ren, tex, clip, &renderQuad)) logSDLError(cout, "SDL_RenderCopy");
+	if(SDL_RenderCopy(ren, _tex, clip, &renderQuad)) logSDLError(std::cout, "SDL_RenderCopy");
 }
 
 bool Block::isInitialized(){
-	return (tex != nullptr);
+	return (_tex != nullptr);
 }
 
-int Block::getWidth() const{
-	return width;
+int Block::getX() const{
+	return _x;
 }
 
-int Block::getHeight() const{
-	return height;
+int Block::getY() const{
+	return _y;
+}
+
+void Block::addX(const int& dx){
+	_x += dx;
+}
+void Block::addY(const int& dy){
+	_y += dy;
+}
+
+void Block::setX(const int& x){
+	_x = x;
+}
+void Block::setY(const int& y){
+	_y = y;
+}
+
+Tetromino* Block::getTetroOwner(){
+	return _tetroOwner;
 }
 
 void Block::updateCoordinates(){
-	screenX = x * blockWidth;
-	screenY = y * blockHeight;
+	_screenX = _x * blockWidth;
+	_screenY = _y * blockHeight;
 }
 
 SDL_Texture* Block::getTexPtr() const{
-	return tex;
+	return _tex;
 }
 
 void Block::alphaMod(const Uint8& alpha){
-	if(SDL_SetTextureAlphaMod(tex, alpha)) logSDLError(cout, "SDL_SetTextureAlphaMod");
+	if(SDL_SetTextureAlphaMod(_tex, alpha)) logSDLError(std::cout, "SDL_SetTextureAlphaMod");
 }

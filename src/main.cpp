@@ -1,14 +1,12 @@
 #include "block.h"
-#include "tetro.h"
+#include "tetromino.h"
 #include "gamestate.h"
 
 #include <iostream>
 #include <SDL2/SDL.h>
 
-using namespace std;
 
 int main(int, char**){
-	
 	GameState game;
 	int dx = 0;
 	int dy = 0;

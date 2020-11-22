@@ -3,7 +3,7 @@ CXX = g++
 PROJDIR := $(realpath $(CURDIR)/..)
 SRCDIR := $(PROJDIR)/src
 BUILDDIR := $(PROJDIR)/build
-HEADERSDIR :=$(SRCDIR)/headers
+HEADERSDIR :=$(PROJDIR)/headers
 
 VERBOSE = TRUE
 
@@ -12,7 +12,7 @@ SDL_INCLUDE := -I/usr/include/SDL2 -D_REENTRANT
 INCLUDE := -I$(HEADERSDIR)
 
 
-CXXFLAGS := -Wall -O2 -c -std=c++11 $(SDL_INCLUDE) $(INCLUDE)
+CXXFLAGS := -Wall -Wextra -O2 -c -std=c++11 $(SDL_INCLUDE) $(INCLUDE)
 LDFLAGS := $(SDL_LIB)
 
 VPATH = $(SRCDIR)
