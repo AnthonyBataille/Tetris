@@ -156,19 +156,19 @@ currentKeyStates(nullptr)
 	}
 
 	// Load text
-	const std::string dejaVuFontPath = resPath + "DejaVuSansMono.ttf";
+	const std::string fontPath = resPath + "Gameplay.ttf"; // https://www.1001freefonts.com/gameplay.font
 
-	scoreLabel.load(ren, dejaVuFontPath, {0, 0, 0, 0xFF}, "Score : 0", 18, fieldWidth + 30, fieldHeight / 6);
-	levelLabel.load(ren, dejaVuFontPath, {0, 0, 0, 0xFF}, "Level : 1", 18, fieldWidth + 30, 2 * fieldHeight / 6);
-	linesLabel.load(ren, dejaVuFontPath, {0, 0, 0, 0xFF}, "Lines : 0", 18, fieldWidth + 30, 3 * fieldHeight / 6);
+	scoreLabel.load(ren, fontPath, {0, 0, 0, 0xFF}, "Score : 0", 18, fieldWidth + 30, fieldHeight / 6);
+	levelLabel.load(ren, fontPath, {0, 0, 0, 0xFF}, "Level : 1", 18, fieldWidth + 30, 2 * fieldHeight / 6);
+	linesLabel.load(ren, fontPath, {0, 0, 0, 0xFF}, "Lines : 0", 18, fieldWidth + 30, 3 * fieldHeight / 6);
 
-	countDownLabel.load(ren, dejaVuFontPath, {0, 0, 0, 0xFF}, "3", 48, fieldWidth / 2, fieldHeight / 2);
+	countDownLabel.load(ren, fontPath, {0, 0, 0, 0xFF}, "3", 48, fieldWidth / 2, fieldHeight / 2);
 	countDownLabel.center(fieldWidth + 200, fieldHeight);
 
-	pauseLabel.load(ren, dejaVuFontPath, {0, 0, 0, 0xFF}, "Game Paused", 32, fieldWidth / 2, fieldHeight / 2);
+	pauseLabel.load(ren, fontPath, {0, 0, 0, 0xFF}, "Game Paused", 32, fieldWidth / 2, fieldHeight / 2);
 	pauseLabel.center(fieldWidth, fieldHeight);
 
-	gameOverLabel.load(ren, dejaVuFontPath, {0, 0, 0, 0xFF}, "Game Over !", 32, fieldWidth / 2, fieldHeight / 2);
+	gameOverLabel.load(ren, fontPath, {0, 0, 0, 0xFF}, "Game Over !", 32, fieldWidth / 2, fieldHeight / 2);
 	gameOverLabel.center(fieldWidth, fieldHeight);
 
 	// Load music
@@ -538,12 +538,12 @@ void GameState::updateGraphics(){
 	SDL_SetRenderDrawColor(ren, 0xFF, 0xFF, 0xFF, 0xFF);
 	SDL_RenderClear(ren);
 
-	if(gamePaused){
-		pauseLabel.render(ren, "Game Paused");
-	}
-
 	for(auto it = vTetroP.begin(); it != vTetroP.end(); ++it){
 		(**it).render(ren);
+	}
+	
+	if(gamePaused){
+		pauseLabel.render(ren, "Game Paused");
 	}
 
 	if(gameOver){
@@ -560,8 +560,7 @@ void GameState::updateGraphics(){
 	linesLabel.render(ren, cLines);
 
 	SDL_SetRenderDrawColor(ren, 0x00, 0x00, 0x00, 0xFF);
-	if(SDL_RenderDrawLine(ren, fieldWidth, 0, fieldWidth, fieldHeight)){
-		logSDLError(std::cout, "SDL_RenderDrawLine");
-	}
+	SDL_RenderDrawLine(ren, fieldWidth, 0, fieldWidth, fieldHeight);
+	
 	SDL_RenderPresent(ren);
 }

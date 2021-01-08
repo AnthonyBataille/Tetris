@@ -56,7 +56,7 @@ void Block::loadFromFile(const std::string& imagePath, SDL_Renderer* ren, Tetrom
 	_tetroOwner = owner;
 	SDL_FreeSurface(bmp);
 	if(_tex == nullptr){
-		logSDLError(std::cout, "SDL_CreateBlockFromSurface");
+		logSDLError(std::cout, "SDL_CreateTextureFromSurface");
 		free();
 	}
 }
